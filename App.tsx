@@ -4,7 +4,7 @@ import { SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 export default function App() {
   return (
      <SafeAreaProvider>
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'red' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
     <View style={styles.container}>
      <Home></Home>
     </View>

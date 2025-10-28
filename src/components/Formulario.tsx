@@ -30,7 +30,7 @@ export default function Formulario({
   const handleCita = () => {
     cerrarModal();
     const nuevoPaciente = {
-      id: Date.now(),
+      id: Date.now().toString(),
       nombre,
       propietario,
       email,
@@ -39,6 +39,7 @@ export default function Formulario({
     };
     const nuevosPacientes = [nuevoPaciente, ...pacientes];
     setPacientes(nuevosPacientes);
+    setPaciente(nuevoPaciente)
     console.log(pacientes);
     
 
