@@ -34,7 +34,7 @@ export default function InformacionPaciente({paciente, setPaciente, setModalPaci
             {/* Nombre */}
             <View style={styles.campo}>
                 <Text style={styles.label}>
-                    Nombre: 
+                        : 
                 </Text>
                 <Text style={styles.valor}>
                     {paciente.nombre}

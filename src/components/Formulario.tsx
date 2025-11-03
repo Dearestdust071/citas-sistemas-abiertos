@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import {
   Modal,
@@ -9,7 +9,16 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
-import DateTimePicker, { DateType, useDefaultStyles } from "react-native-ui-datepicker";
+import DateTimePicker, { DateType, useDefaultStyles } from "react-native-ui-datepicker"; 
+interface Paciente {
+  id?: string;
+  nombre: string;
+  propietario: string;
+  email: string;
+  telefono: string;
+
+  fecha: Date | string; 
+}
 
 export default function Formulario({
   cerrarModal,
@@ -17,31 +26,78 @@ export default function Formulario({
   setPacientes,
   paciente,
   setPaciente,
-}: any) {
+}: {
+  cerrarModal: () => void;
+  pacientes: Paciente[];
+  setPacientes: (pacientes: Paciente[]) => void;
+  paciente: Paciente;
+  setPaciente: (paciente: Paciente) => void;
+}) {
   let today = new Date();
-  const [selected, setSelected] = useState<DateType>();
+  
+  const [nombre, setNombre] = useState(paciente.nombre || ""); 
+  const [propietario, setPropietario] = useState(paciente.propietario || ""); 
+  const [email, setEmail] = useState(paciente.email || ""); 
+  const [telefono, setTelefono] = useState(paciente.telefono || ""); 
+
+  
+  // LÓGICA DE FECHA CORREGIDA:
+  // 1. Inicialización para Edición
+  const initialDate = paciente.id 
+    // Verifica si es un string (que debe ser convertible a Date) o directamente un objeto Date.
+    ? (typeof paciente.fecha === 'string' ? new Date(paciente.fecha) : (paciente.fecha as Date)) 
+    : undefined;
+
+  // 2. Establece el estado de la fecha. Usamos 'any' o eliminamos el genérico si el error persiste.
+  const [selected, setSelected] = useState<any>(initialDate); 
   const defaultStyles = useDefaultStyles();
 
-  const [nombre, setNombre] = useState("");
-  const [propietario, setPropietario] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefono, setTelefono] = useState("");
+  // useEffect para cargar los datos cuando se selecciona un paciente (edición)
+  useEffect(() => {
+    if(paciente.id){
+      setNombre(paciente.nombre)
+      setPropietario(paciente.propietario)
+      setEmail(paciente.email)
+      setTelefono(paciente.telefono)
+      // Asegura que el valor asignado sea un objeto Date
+      setSelected(typeof paciente.fecha === 'string' ? new Date(paciente.fecha) : paciente.fecha)
+    }
+  }, [paciente])
+
 
   const handleCita = () => {
-    cerrarModal();
-    const nuevoPaciente = {
-      id: Date.now().toString(),
+    
+    const pacienteActualizado: Paciente = {
       nombre,
       propietario,
       email,
       telefono,
       fecha: selected || today,
     };
-    const nuevosPacientes = [nuevoPaciente, ...pacientes];
-    setPacientes(nuevosPacientes);
-    setPaciente(nuevoPaciente)
-    console.log(pacientes);
     
+    if (paciente.id) {
+      // Lógica para EDITAR PACIENTE
+      pacienteActualizado.id = paciente.id
+      
+      const pacientesActualizados = pacientes.map((pac) =>
+        pac.id === paciente.id ? pacienteActualizado : pac
+      );
+
+      setPacientes(pacientesActualizados);
+      
+    } else {
+      // Lógica para NUEVO PACIENTE
+      pacienteActualizado.id = Date.now().toString();
+      
+      const nuevosPacientes = [pacienteActualizado, ...pacientes];
+      setPacientes(nuevosPacientes);
+    }
+
+    // Limpiar el paciente en el estado de Home
+    setPaciente({} as Paciente);
+
+    // Cerrar y limpiar formulario
+    cerrarModal();
 
     setNombre("");
     setPropietario("");
@@ -51,14 +107,20 @@ export default function Formulario({
   };
 
   return (
-    <Modal animationType="slide" visible={true}>
+    <Modal animationType="slide" visible={true}> 
       <ScrollView style={styles.contenido}>
-        <Text style={styles.titulo}>Nueva cita</Text>
+        <Text style={styles.titulo}>
+          {paciente.id ? "Editar cita" : "Nueva cita"}
+        </Text>
 
-        <Pressable style={styles.btnCancelar} onPress={cerrarModal}>
+        <Pressable style={styles.btnCancelar} onPress={() => {
+          cerrarModal();
+          // Limpiar el paciente en Home al cancelar 
+          setPaciente({} as Paciente);
+        }}>
           <Text style={styles.btnCancelarTexto}>X Cancelar</Text>
         </Pressable>
-
+        {/* ... (El resto de los TextInputs) ... */}
         <View>
           <Text style={styles.label}>Nombre paciente:</Text>
           <TextInput
@@ -103,12 +165,14 @@ export default function Formulario({
           />
         </View>
 
+
         <View>
           <Text style={styles.label}>Fecha cita:</Text>
           <View style={styles.fechaContenedor}>
             <DateTimePicker
               mode="single"
-              date={selected}
+              // Usamos 'selected as Date' para forzar el tipo si TypeScript se queja
+              date={selected as Date} 
               onChange={({ date }) => setSelected(date)}
               styles={defaultStyles}
             />
@@ -116,7 +180,9 @@ export default function Formulario({
         </View>
 
         <Pressable style={styles.btnNuevaCita} onPress={handleCita}>
-          <Text style={styles.btnNuevaCitaTexto}>Guardar Cita</Text>
+          <Text style={styles.btnNuevaCitaTexto}>
+            {paciente.id ? "Guardar Cambios" : "Guardar Cita"}
+          </Text>
         </Pressable>
       </ScrollView>
     </Modal>
