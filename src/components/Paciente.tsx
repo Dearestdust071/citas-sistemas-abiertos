@@ -1,20 +1,19 @@
 import React from "react";
 import { Pressable, StyleSheet, View, Text } from "react-native";
-import { formatearFecha } from "../helpers"; // Asumimos que esta función existe
+import { formatearFecha } from "../helpers";
 
 export default function Paciente({
   item,
   setModalVisible,
   setPaciente,
   setModalPaciente,
-  pacienteEditar, // Nueva prop recibida desde Home.tsx
+  pacienteEditar,
+  pacienteEliminar,
 }: any) {
 
     const {nombre, fecha, id} = item
     
-    // Función para manejar la acción de editar
     const handleEditar = () => {
-        // Ejecutamos la función recibida de Home.tsx y le pasamos el id
         pacienteEditar(id); 
     }
     
@@ -29,12 +28,15 @@ export default function Paciente({
             <View style={styles.contenedorBotones}>
           <Pressable 
             style={[styles.btn, styles.btnEditar]} 
-            onPress={handleEditar} // Agregamos la funcionalidad al Pressable
+            onPress={handleEditar}
           >
             <Text style={styles.textoBtn}>Editar</Text>
           </Pressable>
 
-          <Pressable style={[styles.btn, styles.btnEliminar]}>
+          <Pressable 
+            style={[styles.btn, styles.btnEliminar]}
+            onPress={() => pacienteEliminar(id)}
+          >
             <Text style={styles.textoBtn}>Eliminar</Text>
           </Pressable>
         </View>
@@ -84,7 +86,6 @@ const styles = StyleSheet.create({
   btnEliminar: {
     backgroundColor: "#EF4444",
   },
-  // Se corrigió el estilo del texto del botón de `texto` a `textoBtn` para usar el estilo que trae el código
   textoBtn: {
     textTransform: "uppercase",
     fontWeight: "700",

@@ -3,12 +3,13 @@ import { Text, View, Pressable, StyleSheet, Modal, FlatList } from "react-native
 import Formulario from "../components/Formulario";
 import InformacionPaciente from "../components/InformacionPaciente";
 import Paciente from "../components/Paciente";
-
+// Asumiendo que esta importación existe en tu proyecto para tipos
+import { Paciente as PacienteTipo } from "../types/Paciente"; 
+// Eliminamos la importación de Alert ya que no la usaremos.
 
 export const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [pacientes, setPacientes] = useState<any[]>([]);
-  // Inicializamos el estado 'paciente' con un objeto vacío para la edición.
   const [paciente, setPaciente] = useState<any>({}); 
   const [modalPaciente, setModalPaciente] = useState(false)
 
@@ -16,24 +17,28 @@ export const Home = () => {
     setModalVisible(false);
   };
 
-  // Función para editar: busca el paciente por ID, lo establece en 'paciente' y abre el modal.
   const pacienteEditar = (id: string) => {
-    // Busca el paciente cuyo id coincida con el pasado
     const pacienteAEditar = pacientes.find(p => p.id === id); 
-    // Establece el paciente en el estado para que se cargue en el Formulario
     setPaciente(pacienteAEditar);
-    // Abre el modal del Formulario
     setModalVisible(true); 
   };
   
-  // La función original 'pacienteEditar' parecía ser para añadir, la renombramos a 'agregarPaciente' o la dejamos de lado por ahora.
-  // La lógica para guardar y editar se manejará en el Formulario.
-  /*
-  const pacienteEditar = (pacienteEditado: any) => {
-    const nuevosPacientes = [pacienteEditado, ...pacientes];
-    setPacientes(nuevosPacientes);
+  // 🚀 FUNCIÓN ELIMINAR SIMPLIFICADA (Borrado inmediato sin Alerta)
+  const pacienteEliminar = (id: string) => {
+      
+      // Filtramos la lista para excluir el paciente con el ID dado
+      const pacientesActualizados = pacientes.filter(
+          pac => pac.id !== id
+      );
+      setPacientes(pacientesActualizados);
+      
+      // Limpiar el paciente seleccionado y cerrar el modal de información si está abierto
+      setPaciente({} as PacienteTipo);
+      setModalPaciente(false);
+      
+      console.log(`Paciente con ID ${id} eliminado.`);
   };
-  */
+
 
   return (
     <View style={styles.container}>
@@ -44,7 +49,6 @@ export const Home = () => {
         <Text style={styles.noPacientes}>No hay pacientes aún</Text>
       ) : (
         <FlatList
-        // style={styles.}
         data={pacientes}
         keyExtractor={(item)=>item.id}
         renderItem={({item})=>{
@@ -52,11 +56,10 @@ export const Home = () => {
             <Paciente
             item={item}
             setModalVisible={setModalVisible}
-            setPaicente={setPaciente}
+            setPaciente={setPaciente} 
             setModalPaciente={setModalPaciente}
-            // Pasamos la nueva función pacienteEditar al componente Paciente
             pacienteEditar={pacienteEditar} 
-            
+            pacienteEliminar={pacienteEliminar}
             ></Paciente>
           )
         }}
@@ -67,14 +70,12 @@ export const Home = () => {
         style={styles.btnNuevaCita}
         onPress={() => {
           setModalVisible(true);
-          // Al presionar "Nueva cita", limpiamos el paciente si había uno cargado.
-          setPaciente({});
+          setPaciente({} as PacienteTipo);
         }}
       >
         <Text style={styles.btnTextoNuevaCita}>Nueva cita</Text>
       </Pressable>
 
-      {/* Condicional para mostrar el Formulario. Si modalVisible es true, se renderiza. */}
       {modalVisible && (
         <Formulario
           cerrarModal={cerrarModal}
@@ -89,17 +90,12 @@ export const Home = () => {
       visible={modalPaciente}
       animationType="slide"
       >
-        {/* Componente InformacionPaciente dentro del Modal */}
         <InformacionPaciente
           paciente={paciente}
           setPaciente={setPaciente}
           setModalPaciente={setModalPaciente}
         />
       </Modal>
-      
-      {/* Se eliminó el renderizado duplicado de InformacionPaciente ya que está dentro del Modal */}
-
-
 
     </View>
   );
